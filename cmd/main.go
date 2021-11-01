@@ -7,8 +7,16 @@ import (
 )
 
 func main() {
-	password := "password"
-	hash, _ := hasher.HashPassword(password)
+	checkPasswordHash("password")
+}
+
+func checkPasswordHash(password string) {
+	hash, err := hasher.HashPassword(password)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
 
 	fmt.Println("Password:", password)
 	fmt.Println("Hash: ", hash)

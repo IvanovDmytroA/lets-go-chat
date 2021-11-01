@@ -2,10 +2,12 @@ package hasher
 
 import "golang.org/x/crypto/bcrypt"
 
+const hashCost int = 14
+
 // HashPassword generates the bcrypt hash of the password.
 // Returns a hashed password and nil or returns error when a provided string is empty.
 func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), hashCost)
 	return string(bytes), err
 }
 
