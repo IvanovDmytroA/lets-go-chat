@@ -30,6 +30,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err := repository.GetUserByUserName(userName)
+	if err == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	userUuid, err := uuid.NewV4()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
