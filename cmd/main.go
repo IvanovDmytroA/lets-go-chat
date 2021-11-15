@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/IvanovDmytroA/lets-go-chat/internal/handler"
+	handler "github.com/IvanovDmytroA/lets-go-chat/internal/handler/transport"
 	"github.com/gorilla/mux"
 )
 

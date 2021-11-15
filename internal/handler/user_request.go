@@ -1,4 +1,4 @@
-package model
+package handler
 
 type CreateUserRequest struct {
 	UserName string
