@@ -1,27 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
+	"os"
 
-	"github.com/IvanovDmytroA/lets-go-chat/pkg/hasher"
+	"github.com/IvanovDmytroA/lets-go-chat/internal/handler"
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	checkPasswordHash("password")
-}
-
-func checkPasswordHash(password string) {
-	hash, err := hasher.HashPassword(password)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-		return
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("$PORT must be set")
 	}
 
-	fmt.Println("Password:", password)
-	fmt.Println("Hash: ", hash)
-
-	match := hasher.CheckPasswordHash(password, hash)
-
-	fmt.Println("Match: ", match)
+	r := mux.NewRouter()
+	r.HandleFunc("/v1", handler.PageViewHandler)
+	r.HandleFunc("/v1/user", handler.CreateUser)
+	r.HandleFunc("/v1/user/login", handler.LoginUser)
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
