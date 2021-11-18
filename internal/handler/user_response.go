@@ -1,4 +1,4 @@
-package model
+package handler
 
 type CreateUserResponse struct {
 	Id       string
