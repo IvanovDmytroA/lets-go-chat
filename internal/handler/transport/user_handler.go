@@ -18,6 +18,7 @@ const jsonType string = "application/json"
 const userNameFormKey string = "userName"
 const passwordFormKey string = "password"
 
+// Create user request handler
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	userName, password := retrieveFormFields(r)
 	if len(userName) < minUserNameLength || len(password) < minPasswordLength {
@@ -32,6 +33,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&userResponse)
 }
 
+// Login user request handler
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	userName, password := retrieveFormFields(r)
 	if len(userName) == 0 || len(password) == 0 {

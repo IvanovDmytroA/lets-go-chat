@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/IvanovDmytroA/lets-go-chat/internal/handler"
@@ -15,8 +14,9 @@ const url string = "Link to the chat"
 
 func CreateUser(userName, password string) (handler.CreateUserResponse, int) {
 	userResponse := handler.CreateUserResponse{}
-	_, err := repository.GetUserByUserName(userName)
-	if err == nil {
+	userRepo := repository.GetUsersRepo()
+	_, exists := userRepo.GetUserByUserName(userName)
+	if exists {
 		return userResponse, http.StatusBadRequest
 	}
 
@@ -39,7 +39,7 @@ func CreateUser(userName, password string) (handler.CreateUserResponse, int) {
 		Password: hash,
 	}
 
-	repository.SaveUser(user)
+	userRepo.SaveUser(user)
 
 	return userResponse, http.StatusOK
 }
@@ -47,7 +47,7 @@ func CreateUser(userName, password string) (handler.CreateUserResponse, int) {
 func LoginUser(userName, password string) (handler.LoginUserResponse, int) {
 	userLoginResponse := handler.LoginUserResponse{}
 	loginRequest := handler.LoginUserRequest{UserName: userName, Password: password}
-	responseStatus := defineResponseStatus(loginRequest)
+	responseStatus := defineLoginResponseStatus(loginRequest)
 	if responseStatus != http.StatusOK {
 		return userLoginResponse, responseStatus
 	}
@@ -55,14 +55,11 @@ func LoginUser(userName, password string) (handler.LoginUserResponse, int) {
 	return userLoginResponse, responseStatus
 }
 
-func defineResponseStatus(loginRequest handler.LoginUserRequest) int {
-	user, err := repository.GetUserByUserName(loginRequest.UserName)
-	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
-			return http.StatusBadRequest
-		} else {
-			return http.StatusInternalServerError
-		}
+func defineLoginResponseStatus(loginRequest handler.LoginUserRequest) int {
+	userRepo := repository.GetUsersRepo()
+	user, exists := userRepo.GetUserByUserName(loginRequest.UserName)
+	if !exists {
+		return http.StatusBadRequest
 	}
 
 	isCorrectPassword := hasher.CheckPasswordHash(loginRequest.Password, user.Password)
