@@ -12,6 +12,7 @@ import (
 	"github.com/IvanovDmytroA/lets-go-chat/internal/repository"
 	connectors "github.com/IvanovDmytroA/lets-go-chat/internal/repository/connectors"
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -44,8 +45,8 @@ func initDb(e *configuration.Env) {
 		var worker connectors.Worker = &connectors.PostgresWorker{}
 		var dbUrl = os.Getenv("DATABASE_URL")
 		if dbUrl == "" {
-			dbUrl = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-				e.DataBase.Host, e.DataBase.Port, e.DataBase.User, e.DataBase.Password, e.DataBase.Name)
+			dbUrl = fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
+				e.DataBase.Host, e.DataBase.Port, e.DataBase.User, e.DataBase.Password)
 		}
 
 		dbc, err := sql.Open(e.DataBase.Type, dbUrl)
