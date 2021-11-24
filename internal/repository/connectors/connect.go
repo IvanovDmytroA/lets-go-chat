@@ -1,16 +1,16 @@
 package repository
 
 import (
-	"database/sql"
+	"github.com/uptrace/bun"
 )
 
 // Database worker interface
 type Worker interface {
-	Init(*sql.DB)
-	Get() *sql.DB
+	Init(*bun.DB)
+	Get() *bun.DB
 }
 
 // Database connection pool
 type Pool struct {
-	DB *sql.DB
+	DB *bun.DB
 }

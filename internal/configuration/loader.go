@@ -12,6 +12,7 @@ const configPath string = "../configs/config.yml"
 // Environment structure
 type Env struct {
 	DataBase
+	Redis
 }
 
 // DB configuration
@@ -22,6 +23,12 @@ type DataBase struct {
 	Name     string `yaml:"name"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
+}
+
+// Server configuration structure, Port string
+type Redis struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 // Init environment with configuration

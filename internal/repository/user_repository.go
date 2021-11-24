@@ -37,11 +37,11 @@ func (r *usersRepository) SaveUser(user model.User) error {
 
 // Get user by name
 // Returns user and flag showing whether the user exists in the database
-func (r *usersRepository) GetUserByUserName(userName string) (model.User, bool) {
+func (r *usersRepository) GetUserByUserName(userName string) (model.User, error) {
 	var user model.User
 	err := r.Get().QueryRow(getUserByNameQuery, userName).Scan(&user.Id, &user.UserName, &user.Password)
 	if err != nil {
-		return model.User{}, false
+		return model.User{}, err
 	}
-	return user, true
+	return user, nil
 }
