@@ -15,3 +15,31 @@ Open terminal from the application directory and :
 <pre>
     $ go run cmd/main.go
 </pre>
+
+## API
+Use Postman or your favourite browser
+
+1. Registration
+
+<pre>
+POST http://localhost:8080/v1/user -H 'Content-Type: application/json' -d '{"userName":"name","password":"mpassword"}'
+</pre>
+
+2. Login
+
+<pre>
+POST http://localhost:8080/v1/user/login -H 'Content-Type: application/json' -d '{"userName":"name","password":"password"}'
+</pre>
+
+3. Start chat
+Use token returned by Login request
+
+<pre>
+ws://localhost:8080/v1/chat/ws.rtm.start?token=your_token
+</pre>
+
+4. Get active users
+
+<pre>
+GET http://localhost:8080/v1/user/active -H 'Content-Type: application/json'
+</pre>
