@@ -83,7 +83,7 @@ func initEcho(rc *redis.Client, p string) {
 	e := echo.New()
 	e.Debug = true
 	e.Use(middleware.Logger())
-	e.Use(middleware.BodyDump(bodyDumpHandler))
+	e.Use(middleware.BodyDump(bodyDumpMiddleware))
 	e.Use(middleware.Recover())
 	s := handler.NewStatistic()
 	e.Use(s.Process)
@@ -97,27 +97,4 @@ func initEcho(rc *redis.Client, p string) {
 	e.Static("/v1/chat", "internal/public")
 
 	e.Logger.Fatal(e.Start(":" + p))
-}
-
-func dataSourceMiddleware(dataStore *bun.DB) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Set("db", dataStore)
-			return next(c)
-		}
-	}
-}
-
-func redisMiddleware(cl *redis.Client) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Set("redis", cl)
-			return next(c)
-		}
-	}
-}
-
-func bodyDumpHandler(c echo.Context, reqBody, resBody []byte) {
-	fmt.Printf("\nRequest Body: %v\n", string(reqBody))
-	fmt.Printf("Response Body: %v\n", string(resBody))
 }
