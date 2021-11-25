@@ -13,7 +13,7 @@ import (
 	"github.com/IvanovDmytroA/lets-go-chat/internal/model"
 	"github.com/IvanovDmytroA/lets-go-chat/internal/repository"
 	"github.com/IvanovDmytroA/lets-go-chat/pkg/hasher"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo"
 	uuid "github.com/satori/go.uuid"

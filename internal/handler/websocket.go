@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/IvanovDmytroA/lets-go-chat/internal/repository"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo"

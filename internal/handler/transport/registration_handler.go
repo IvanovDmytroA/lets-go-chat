@@ -25,6 +25,12 @@ func CreateUser(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
 	c.Response().WriteHeader(status)
 
+	if status != http.StatusOK {
+		errMsg := "Failed to create new user"
+		log.Printf(errMsg)
+		return echo.NewHTTPError(http.StatusBadRequest, errMsg)
+	}
+
 	// Encoding and sending response
 	enc := json.NewEncoder(c.Response())
 	err := enc.Encode(userResponse)
