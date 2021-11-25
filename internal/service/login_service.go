@@ -2,9 +2,11 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/IvanovDmytroA/lets-go-chat/internal/handler"
@@ -17,19 +19,15 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const url string = "Link to the chat"
 const errorMessage string = "Invalid name or password"
 
 func LoginUser(userName, password string, c echo.Context) error {
-	userLoginResponse := handler.LoginUserResponse{}
 	loginRequest := handler.LoginUserRequest{UserName: userName, Password: password}
 	user, err := getUserFromRepo(loginRequest)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
-
-	userLoginResponse.Url = url
-	// Generating token
 	token, err := createToken(user.Id)
 	if err != nil {
 		errMsg := "Failed to generate token"
@@ -37,7 +35,6 @@ func LoginUser(userName, password string, c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
 	}
 
-	// CreateAuth
 	client, _ := c.Get("redis").(*redis.Client)
 	saveErr := createAuth(client, user.Id, token)
 	if saveErr != nil {
@@ -46,7 +43,6 @@ func LoginUser(userName, password string, c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, errMsg+err.Error())
 	}
 
-	// Setting up response
 	loginUrl := "wss://serene-everglades-55494.herokuapp.com/v1/chat/ws.rtm.start?token=" + token.AccessToken
 	loginUserResponse := handler.LoginUserResponse{
 		Url: loginUrl,
@@ -59,14 +55,21 @@ func LoginUser(userName, password string, c echo.Context) error {
 		log.Printf(errMsg+"%v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, errMsg+err.Error())
 	}
+
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+	c.Response().Header().Set("X-Rate-Limit", strconv.Itoa(360))
+	c.Response().Header().Set("X-Expires-After", time.Now().Add(time.Minute*10).Format(time.RFC1123))
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+	c.Response().WriteHeader(http.StatusOK)
+
 	return nil
 }
 
 func getUserFromRepo(loginRequest handler.LoginUserRequest) (model.User, error) {
 	userRepo := repository.GetUsersRepo()
-	user, err := userRepo.GetUserByUserName(loginRequest.UserName)
-	if err != nil {
-		return user, echo.NewHTTPError(http.StatusBadRequest, "Invalid user name")
+	user, exists := userRepo.GetUserByUserName(loginRequest.UserName)
+	if !exists {
+		return user, echo.NewHTTPError(http.StatusBadRequest, "User with provided name does not exist")
 	}
 
 	isCorrectPassword := hasher.CheckPasswordHash(loginRequest.Password, user.Password)

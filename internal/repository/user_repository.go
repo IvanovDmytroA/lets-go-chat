@@ -1,12 +1,11 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/IvanovDmytroA/lets-go-chat/internal/model"
 	repository "github.com/IvanovDmytroA/lets-go-chat/internal/repository/connectors"
 )
-
-const createUserQuery string = `insert into "users"("username", "password") values($1, $2)`
-const getUserByNameQuery string = "select id, username, password from users where username = $1"
 
 var usersRepo usersRepository
 
@@ -28,7 +27,8 @@ func GetUsersRepo() *usersRepository {
 // Save new user
 // Returns an error when the user cannot be saved, otherwise return nil
 func (r *usersRepository) SaveUser(user model.User) error {
-	_, err := r.Get().Exec(createUserQuery, user.UserName, user.Password)
+	ctx := context.Background()
+	_, err := r.Worker.Get().NewInsert().Model(&user).Exec(ctx)
 	if err != nil {
 		return err
 	}
@@ -37,11 +37,11 @@ func (r *usersRepository) SaveUser(user model.User) error {
 
 // Get user by name
 // Returns user and flag showing whether the user exists in the database
-func (r *usersRepository) GetUserByUserName(userName string) (model.User, error) {
+func (r *usersRepository) GetUserByUserName(userName string) (model.User, bool) {
+	ctx := context.Background()
 	var user model.User
-	err := r.Get().QueryRow(getUserByNameQuery, userName).Scan(&user.Id, &user.UserName, &user.Password)
-	if err != nil {
-		return model.User{}, err
+	if err := r.Worker.Get().NewSelect().Model(&user).Where("user_name = ?", userName).Scan(ctx); err != nil {
+		return model.User{}, false
 	}
-	return user, nil
+	return user, true
 }

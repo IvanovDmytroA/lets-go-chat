@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/IvanovDmytroA/lets-go-chat/internal/handler"
@@ -13,14 +14,9 @@ import (
 func CreateUser(userName, password string) (handler.CreateUserResponse, int) {
 	userResponse := handler.CreateUserResponse{}
 	userRepo := repository.GetUsersRepo()
-	_, err := userRepo.GetUserByUserName(userName)
-	if err != nil {
+	_, exists := userRepo.GetUserByUserName(userName)
+	if exists {
 		return userResponse, http.StatusBadRequest
-	}
-
-	userUuid := uuid.NewV4()
-	if err != nil {
-		return userResponse, http.StatusInternalServerError
 	}
 
 	createRequest := handler.CreateUserRequest{UserName: userName, Password: password}
@@ -30,6 +26,7 @@ func CreateUser(userName, password string) (handler.CreateUserResponse, int) {
 	}
 
 	userResponse.UserName = createRequest.UserName
+	userUuid := uuid.NewV4()
 	userResponse.Id = userUuid.String()
 	user := model.User{
 		Id:       userResponse.Id,
@@ -37,7 +34,11 @@ func CreateUser(userName, password string) (handler.CreateUserResponse, int) {
 		Password: hash,
 	}
 
-	userRepo.SaveUser(user)
+	err = userRepo.SaveUser(user)
+	if err != nil {
+		fmt.Println(err)
+		return userResponse, http.StatusBadRequest
+	}
 
 	return userResponse, http.StatusOK
 }

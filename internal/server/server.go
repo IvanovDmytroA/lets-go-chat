@@ -48,8 +48,8 @@ func initDb(e *configuration.Env) {
 		var worker connectors.Worker = &connectors.PostgresWorker{}
 		var dbUrl = os.Getenv("DATABASE_URL")
 		if dbUrl == "" {
-			dbUrl = fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
-				e.DataBase.Host, e.DataBase.Port, e.DataBase.User, e.DataBase.Password)
+			dbUrl = fmt.Sprintf("postgres://%s:%s@%s:%d?sslmode=disable",
+				e.DataBase.User, e.DataBase.Password, e.DataBase.Host, e.DataBase.Port)
 		}
 
 		dbc := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dbUrl)))
@@ -99,7 +99,6 @@ func initEcho(rc *redis.Client, p string) {
 	e.Logger.Fatal(e.Start(":" + p))
 }
 
-// Middleware function to transfer sql dataStore to handlers
 func dataSourceMiddleware(dataStore *bun.DB) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -109,17 +108,15 @@ func dataSourceMiddleware(dataStore *bun.DB) echo.MiddlewareFunc {
 	}
 }
 
-// Middleware function to transfer redis to handlers
-func redisMiddleware(dataStore *redis.Client) echo.MiddlewareFunc {
+func redisMiddleware(cl *redis.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			c.Set("redis", dataStore)
+			c.Set("redis", cl)
 			return next(c)
 		}
 	}
 }
 
-// Middleware to log requests and responses
 func bodyDumpHandler(c echo.Context, reqBody, resBody []byte) {
 	fmt.Printf("\nRequest Body: %v\n", string(reqBody))
 	fmt.Printf("Response Body: %v\n", string(resBody))

@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const configPath string = "../configs/config.yml"
+const configPath string = "configs/config.yml"
 
 // Environment structure
 type Env struct {

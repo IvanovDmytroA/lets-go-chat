@@ -3,8 +3,6 @@ package handler
 import (
 	"log"
 	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/IvanovDmytroA/lets-go-chat/internal/handler"
 	"github.com/IvanovDmytroA/lets-go-chat/internal/service"
@@ -30,12 +28,12 @@ func LoginUser(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
 	}
 
-	service.LoginUser(ur.UserName, ur.Password, c)
+	err := service.LoginUser(ur.UserName, ur.Password, c)
 
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
-	c.Response().Header().Set("X-Rate-Limit", strconv.Itoa(360))
-	c.Response().Header().Set("X-Expires-After", time.Now().Add(time.Minute*10).Format(time.RFC1123))
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
-	c.Response().WriteHeader(http.StatusOK)
+	if err != nil {
+		log.Println(err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
 	return nil
 }

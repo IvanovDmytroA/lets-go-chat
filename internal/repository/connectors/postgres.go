@@ -30,14 +30,14 @@ func (p *PostgresWorker) Get() *bun.DB {
 func createTables(p *PostgresWorker) {
 	_, err := p.DB.Exec(`create table if not exists users
 		(
-			id serial primary key,
-			username varchar,
+			id varchar primary key,
+			user_name varchar,
 			password varchar
 		);
 		create unique index if not exists users_id
 			on users (id);
 		create unique index if not exists users_username
-			on users (username);
+			on users (user_name);
 		`)
 
 	if err != nil {
