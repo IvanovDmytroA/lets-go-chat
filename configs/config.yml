@@ -5,3 +5,8 @@ database:
   name: gochat
   user: postgres
   password: pass
+
+redis:
+  host:     localhost
+  port:     6379
+  
