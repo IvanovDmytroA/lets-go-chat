@@ -1,0 +1,12 @@
+database:
+  type: postgres
+  host: localhost
+  port: 5432
+  name: gochat
+  user: postgres
+  password: pass
+
+redis:
+  host:     localhost
+  port:     6378
+  

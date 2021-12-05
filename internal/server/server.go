@@ -20,10 +20,12 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
+const configPath string = "configs/config.yml"
+
 // Start and configure server
 func Start() {
 	port := initServer()
-	env, err := configuration.InitEnv()
+	env, err := configuration.InitEnv(configPath)
 	if err != nil {
 		log.Fatal("Failed to init environment configuration")
 	}

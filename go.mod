@@ -14,6 +14,7 @@ require (
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/satori/go.uuid v1.2.0
+	github.com/stretchr/testify v1.7.0
 	github.com/uptrace/bun v1.0.17
 	github.com/uptrace/bun/dialect/pgdialect v1.0.17
 	github.com/uptrace/bun/driver/pgdriver v1.0.17
