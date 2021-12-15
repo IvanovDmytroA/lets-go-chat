@@ -26,13 +26,13 @@ func TestLoadToStructs(t *testing.T) {
 				},
 				Redis: Redis{
 					Host: "localhost",
-					Port: 6378,
+					Port: 6379,
 				},
 			},
 		},
 	}
 
-	actual, err := InitEnv("../../configs/test_configs/test_config.yml")
+	actual, err := InitEnv("../../tests/test_configs/test_config.yml")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
