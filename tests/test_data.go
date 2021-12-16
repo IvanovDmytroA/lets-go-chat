@@ -19,12 +19,14 @@ import (
 )
 
 var TestData = map[string]string{"userName": "user", "password": "password"}
+var IncompleteTestData = map[string]string{"pass": "pass"}
 var TestDataM, _ = json.Marshal(TestData)
+var IncompleteTestDataM, _ = json.Marshal(IncompleteTestData)
 var userUuid = uuid.NewV4()
 var user = model.User{
 	Id:       userUuid.String(),
 	UserName: "user",
-	Password: "$2a$14$hyn/uqCVSyv67opTEkyYOu3taKD0b5vYH5pYzrdUZoSevfMtW9i.G",
+	Password: "$2a$14$n887vQBDFPzCSmLbUzZZ4uwC9NKhE7guYLijT2Qw1Ne/SUFWqV4oO",
 }
 
 func DBConnection() *bun.DB {

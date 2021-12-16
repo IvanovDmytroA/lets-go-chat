@@ -31,6 +31,8 @@ func TestLoginUser(t *testing.T) {
 		t.Fatalf("Saving test user failed")
 	}
 
+	defer td.DelUser(dbConnect, t)
+
 	e := echo.New()
 
 	rec := httptest.NewRecorder()
@@ -47,8 +49,54 @@ func TestLoginUser(t *testing.T) {
 		t.Fatalf("Failed to login user")
 	}
 
+}
+
+func TestLoginUserEmptyRepository(t *testing.T) {
+	dbConnect := td.DBConnection()
+	redisConnect := td.RedisConnection()
+	td.DelUser(dbConnect, t)
+	e := echo.New()
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(echo.POST, "/v1/user/login", bytes.NewReader(td.TestDataM))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c := e.NewContext(req, rec)
+	c.Set("db", dbConnect)
+	c.Set("redis", redisConnect)
+
+	errLogin := LoginUser("user", "password", c)
+
+	defer td.DelUser(dbConnect, t)
+
+	if errLogin == nil {
+		t.Fatalf("User without credentials logged in")
+	}
+}
+
+func TestLoginUserWithIncorrectPassword(t *testing.T) {
+	dbConnect := td.DBConnection()
+	redisConnect := td.RedisConnection()
 	td.DelUser(dbConnect, t)
 
+	err := createTestUser(dbConnect)
+	if err != nil {
+		t.Fatalf("Saving test user failed")
+	}
+
+	defer td.DelUser(dbConnect, t)
+
+	e := echo.New()
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(echo.POST, "/v1/user/login", bytes.NewReader(td.TestDataM))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c := e.NewContext(req, rec)
+	c.Set("db", dbConnect)
+	c.Set("redis", redisConnect)
+
+	errLogin := LoginUser("user", "pass", c)
+
+	if errLogin == nil {
+		t.Fatalf("User without credentials logged in")
+	}
 }
 
 func createTestUser(dbc *bun.DB) error {

@@ -22,6 +22,17 @@ func TestAddUserToActiveUsersList(t *testing.T) {
 	}
 }
 
+func TestAddUserToActiveUsersListOnce(t *testing.T) {
+	InitActiveUsersStorage()
+	storage := GetActiveUsersStorage()
+	storage.AddUserToActiveUsersList("user")
+	storage.AddUserToActiveUsersList("user")
+
+	if len(storage.Users) > 1 {
+		t.Fatal("Failed add user to active users list")
+	}
+}
+
 func TestRemoveUserFromActiveUsersList(t *testing.T) {
 	InitActiveUsersStorage()
 	storage := GetActiveUsersStorage()

@@ -36,3 +36,24 @@ func TestCreateUser(t *testing.T) {
 
 	td.DelUser(dbConnect, t)
 }
+
+func TestCreateUserWithEmptyCredentials(t *testing.T) {
+	dbConnect := td.DBConnection()
+	td.DelUser(dbConnect, t)
+
+	e := echo.New()
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(echo.POST, "/v1/user", bytes.NewReader(td.TestDataM))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	c := e.NewContext(req, rec)
+	c.Set("db", dbConnect)
+
+	ur, status := CreateUser("", "")
+
+	if len(ur.Id) != 0 || status == http.StatusOK {
+		t.Fatalf("Created user with empty credentials")
+	}
+
+	td.DelUser(dbConnect, t)
+}
