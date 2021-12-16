@@ -11,11 +11,11 @@ import (
 )
 
 func TestGetActiveUsers(t *testing.T) {
-	var TestDataUrl = map[string]string{"url": "http://localhost:8080/v1/chat/ws.rtm.start?token=7efbd1e7-7e7c-4c3e-9928-85b17c5d9978"}
-	var TestDataUrlM, _ = json.Marshal(TestDataUrl)
+	var testDataUrl = map[string]string{"url": "http://localhost:8080/v1/user/active"}
+	var testDataUrlM, _ = json.Marshal(testDataUrl)
 	e := echo.New()
 	rec := httptest.NewRecorder()
-	req := httptest.NewRequest(echo.POST, "/v1/chat/ws.rtm.start", bytes.NewReader(TestDataUrlM))
+	req := httptest.NewRequest(echo.POST, "/v1/chat/ws.rtm.start", bytes.NewReader(testDataUrlM))
 	c := e.NewContext(req, rec)
 	repository.InitActiveUsersStorage()
 

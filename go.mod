@@ -13,6 +13,7 @@ require (
 	github.com/lib/pq v1.10.4
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/onsi/gomega v1.16.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.7.0
 	github.com/uptrace/bun v1.0.17

@@ -27,9 +27,13 @@ func Websocket(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
 	}
 
+	return connect(c, *accessDetails)
+}
+
+func connect(c echo.Context, ad AccessDetails) error {
 	client, _ := c.Get("redis").(*redis.Client)
 
-	userId, err := client.Get(accessDetails.AccessUuid).Result()
+	userId, err := client.Get(ad.AccessUuid).Result()
 	if err != nil {
 		errMsg := "Unauthorized. "
 		log.Printf(errMsg+"%v\n", err)
@@ -37,7 +41,7 @@ func Websocket(c echo.Context) error {
 	}
 
 	updateOnline(userId, true)
-	client.Del(accessDetails.AccessUuid)
+	client.Del(ad.AccessUuid)
 
 	upgrader := websocket.Upgrader{}
 
