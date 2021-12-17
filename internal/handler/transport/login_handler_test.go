@@ -15,7 +15,6 @@ func TestLoginUser(t *testing.T) {
 
 	td.DelUser(dbConnect, t)
 	err := td.AddTestUser(dbConnect)
-	defer td.DelUser(dbConnect, t)
 	if err != nil {
 		t.Fatalf("Saving test user failed")
 	}
@@ -29,6 +28,8 @@ func TestLoginUser(t *testing.T) {
 	c.Set("redis", redisConnect)
 
 	err = LoginUser(c)
+
+	td.DelUser(dbConnect, t)
 
 	if err != nil {
 		t.Fatalf("Failed to login user: %s", err.Error())
@@ -51,6 +52,8 @@ func TestLoginUserBadRequestError(t *testing.T) {
 
 	err := LoginUser(c)
 
+	td.DelUser(dbConnect, t)
+
 	if err == nil {
 		t.Fatal("Expected to get error, but user successfully logged in")
 	}
@@ -71,6 +74,8 @@ func TestLoginUserFailedBindData(t *testing.T) {
 	c.Set("redis", redisConnect)
 
 	err := LoginUser(c)
+
+	td.DelUser(dbConnect, t)
 
 	if err == nil {
 		t.Fatal("Expected to get error, but user successfully logged in")
