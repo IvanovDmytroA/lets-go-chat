@@ -1,13 +1,13 @@
 package configuration
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-//TestLoadToStructs tests if data loads to structs correctly
 func TestLoadToStructs(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -43,10 +43,18 @@ func TestLoadToStructs(t *testing.T) {
 	}
 }
 
-//TestLoadMissingFile tests if Load function returns error if wrong file path set
 func TestLoadMissingFile(t *testing.T) {
 	_, err := InitEnv("../../configs/test_configs/missing_config.yml")
 	if err == nil {
 		t.Fatal("Loaded non-existent file")
 	}
+}
+
+func ExampleInitEnv() {
+	env, _ := InitEnv("../../tests/test_configs/test_config.yml")
+	fmt.Println(env.DataBase.Host)
+	fmt.Println(env.DataBase.Port)
+	// Output:
+	// localhost
+	// 5432
 }

@@ -1,6 +1,7 @@
 package hasher
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -18,4 +19,10 @@ func TestCheckPasswordHash(t *testing.T) {
 	if !CheckPasswordHash(pass, hash) {
 		t.Fatalf("Hash is not equal")
 	}
+}
+
+func ExampleHashPassword() {
+	hash, _ := HashPassword(pass)
+	fmt.Println(hash[:7])
+	// Output: $2a$14$
 }

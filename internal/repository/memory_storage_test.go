@@ -48,3 +48,21 @@ func TestRemoveUserFromActiveUsersList(t *testing.T) {
 		t.Fatal("Failed delete user from active users list")
 	}
 }
+
+func BenchmarkInitActiveUsersStorage(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		InitActiveUsersStorage()
+	}
+}
+
+func BenchmarkGetActiveUsersStorage(b *testing.B) {
+	InitActiveUsersStorage()
+	storage := GetActiveUsersStorage()
+	storage.AddUserToActiveUsersList("user1")
+	storage.AddUserToActiveUsersList("user2")
+	storage.AddUserToActiveUsersList("user3")
+
+	for n := 0; n < b.N; n++ {
+		GetActiveUsersStorage()
+	}
+}
