@@ -7,8 +7,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const configPath string = "configs/config.yml"
-
 // Environment structure
 type Env struct {
 	DataBase
@@ -32,8 +30,8 @@ type Redis struct {
 }
 
 // Init environment with configuration
-func InitEnv() (*Env, error) {
-	file, err := os.Open(configPath)
+func InitEnv(p string) (*Env, error) {
+	file, err := os.Open(p)
 
 	defer func(f *os.File) {
 		err := f.Close()
@@ -42,12 +40,12 @@ func InitEnv() (*Env, error) {
 		}
 	}(file)
 
+	var env Env
 	if err != nil {
-		panic(err)
+		return &env, err
 	}
 
 	decoder := yaml.NewDecoder(file)
-	var env Env
 	err = decoder.Decode(&env)
 	if err != nil {
 		panic(err)

@@ -20,16 +20,20 @@ type AccessDetails struct {
 
 func Websocket(c echo.Context) error {
 	userToken := c.QueryParam("token")
-	accessDetails, err := ExtractTokenMetadata(userToken)
+	accessDetails, err := extractTokenMetadata(userToken)
 	if err != nil {
 		errMsg := "Invalid token: "
 		log.Printf(errMsg+"%v\n", err)
 		return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
 	}
 
+	return connect(c, *accessDetails)
+}
+
+func connect(c echo.Context, ad AccessDetails) error {
 	client, _ := c.Get("redis").(*redis.Client)
 
-	userId, err := client.Get(accessDetails.AccessUuid).Result()
+	userId, err := client.Get(ad.AccessUuid).Result()
 	if err != nil {
 		errMsg := "Unauthorized. "
 		log.Printf(errMsg+"%v\n", err)
@@ -37,7 +41,7 @@ func Websocket(c echo.Context) error {
 	}
 
 	updateOnline(userId, true)
-	client.Del(accessDetails.AccessUuid)
+	client.Del(ad.AccessUuid)
 
 	upgrader := websocket.Upgrader{}
 
@@ -64,9 +68,8 @@ func Websocket(c echo.Context) error {
 	}
 }
 
-func VerifyToken(t string) (*jwt.Token, error) {
+func verifyToken(t string) (*jwt.Token, error) {
 	token, err := jwt.Parse(t, func(token *jwt.Token) (interface{}, error) {
-		//Make sure that the token method conform to "SigningMethodHMAC"
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -78,8 +81,8 @@ func VerifyToken(t string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func ExtractTokenMetadata(t string) (*AccessDetails, error) {
-	vt, err := VerifyToken(t)
+func extractTokenMetadata(t string) (*AccessDetails, error) {
+	vt, err := verifyToken(t)
 	if err != nil {
 		return nil, err
 	}

@@ -45,3 +45,14 @@ func (r *usersRepository) GetUserByUserName(userName string) (model.User, bool) 
 	}
 	return user, true
 }
+
+// Delete user
+// Returns an error when the user cannot be deleted, otherwise return nil
+func (r *usersRepository) DeleteUser(user model.User) error {
+	ctx := context.Background()
+	_, err := r.Worker.Get().NewDelete().Model(&user).Where("user_name = ?", &user.UserName).Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}

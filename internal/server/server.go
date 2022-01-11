@@ -20,10 +20,12 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
+const configPath string = "configs/config.yml"
+
 // Start and configure server
 func Start() {
 	port := initServer()
-	env, err := configuration.InitEnv()
+	env, err := configuration.InitEnv(configPath)
 	if err != nil {
 		log.Fatal("Failed to init environment configuration")
 	}
@@ -85,11 +87,8 @@ func initEcho(rc *redis.Client, p string) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.BodyDump(bodyDumpMiddleware))
 	e.Use(middleware.Recover())
-	s := handler.NewStatistic()
-	e.Use(s.Process)
 	e.Use(dataSourceMiddleware(repository.GetUsersRepo().Get()))
 	e.Use(redisMiddleware(rc))
-	e.GET("/stats", s.Handle)
 	e.POST("/v1/user", transport_handler.CreateUser)
 	e.POST("/v1/user/login", transport_handler.LoginUser)
 	e.GET("/v1/user/active", transport_handler.GetActiveUsers)

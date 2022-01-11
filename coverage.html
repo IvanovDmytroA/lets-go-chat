@@ -1,0 +1,726 @@
+<html><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>configuration: Go Coverage Report</title>
+    <style>
+        body {
+            background: black;
+            color: rgb(80, 80, 80);
+        }
+        body, pre, #legend span {
+            font-family: Menlo, monospace;
+            font-weight: bold;
+        }
+        #topbar {
+            background: black;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 42px;
+            border-bottom: 1px solid rgb(80, 80, 80);
+        }
+        #content {
+            margin-top: 50px;
+        }
+        #nav, #legend {
+            float: left;
+            margin-left: 10px;
+        }
+        #legend {
+            margin-top: 12px;
+        }
+        #nav {
+            margin-top: 10px;
+        }
+        #legend span {
+            margin: 0 5px;
+        }
+        .cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+    </style>
+</head>
+<body>
+    <div id="topbar">
+        <div id="nav">
+            <select id="files">
+            
+            <option value="file0">github.com/IvanovDmytroA/lets-go-chat/internal/configuration/loader.go (92.3%)</option>
+            
+            <option value="file1">github.com/IvanovDmytroA/lets-go-chat/internal/handler/transport/active_users_handler.go (100.0%)</option>
+            
+            <option value="file2">github.com/IvanovDmytroA/lets-go-chat/internal/handler/transport/login_handler.go (100.0%)</option>
+            
+            <option value="file3">github.com/IvanovDmytroA/lets-go-chat/internal/handler/transport/registration_handler.go (84.2%)</option>
+            
+            <option value="file4">github.com/IvanovDmytroA/lets-go-chat/internal/handler/websocket.go (51.9%)</option>
+            
+            <option value="file5">github.com/IvanovDmytroA/lets-go-chat/internal/repository/connectors/postgres.go (88.9%)</option>
+            
+            <option value="file6">github.com/IvanovDmytroA/lets-go-chat/internal/repository/memory_storage.go (100.0%)</option>
+            
+            <option value="file7">github.com/IvanovDmytroA/lets-go-chat/internal/repository/user_repository.go (94.1%)</option>
+            
+            <option value="file8">github.com/IvanovDmytroA/lets-go-chat/internal/service/login_service.go (82.0%)</option>
+            
+            <option value="file9">github.com/IvanovDmytroA/lets-go-chat/internal/service/registration_service.go (83.3%)</option>
+            
+            <option value="file10">github.com/IvanovDmytroA/lets-go-chat/pkg/hasher/hasher.go (100.0%)</option>
+            
+            </select>
+        </div>
+        <div id="legend">
+            <span>not tracked</span>
+        
+            <span class="cov0">not covered</span>
+            <span class="cov8">covered</span>
+        
+        </div>
+    </div>
+    <div id="content">
+    
+    <pre class="file" id="file0" style="display: none;">package configuration
+
+import (
+    "log"
+    "os"
+
+    "gopkg.in/yaml.v3"
+)
+
+// Environment structure
+type Env struct {
+    DataBase
+    Redis
+}
+
+// DB configuration
+type DataBase struct {
+    Type     string `yaml:"type"`
+    Host     string `yaml:"host"`
+    Port     int    `yaml:"port"`
+    Name     string `yaml:"name"`
+    User     string `yaml:"user"`
+    Password string `yaml:"password"`
+}
+
+// Server configuration structure, Port string
+type Redis struct {
+    Host string `yaml:"host"`
+    Port int    `yaml:"port"`
+}
+
+// Init environment with configuration
+func InitEnv(p string) (*Env, error) <span class="cov8" title="1">{
+    file, err := os.Open(p)
+
+    defer func(f *os.File) </span><span class="cov8" title="1">{
+            err := f.Close()
+            if err != nil </span><span class="cov8" title="1">{
+                    log.Println(err)
+            }</span>
+    }(file)
+
+    <span class="cov8" title="1">var env Env
+    if err != nil </span><span class="cov8" title="1">{
+            return &amp;env, err
+    }</span>
+
+    <span class="cov8" title="1">decoder := yaml.NewDecoder(file)
+    err = decoder.Decode(&amp;env)
+    if err != nil </span><span class="cov0" title="0">{
+            panic(err)</span>
+    }
+
+    <span class="cov8" title="1">return &amp;env, nil</span>
+}
+</pre>
+    
+    <pre class="file" id="file1" style="display: none">package handler
+
+import (
+    "encoding/json"
+    "net/http"
+
+    "github.com/IvanovDmytroA/lets-go-chat/internal/repository"
+    "github.com/labstack/echo"
+)
+
+func GetActiveUsers(c echo.Context) error <span class="cov8" title="1">{
+    activeUsers := repository.GetActiveUsersStorage().Users
+    c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+    c.Response().WriteHeader(http.StatusOK)
+    json.NewEncoder(c.Response()).Encode(&amp;activeUsers)
+    return nil
+}</span>
+</pre>
+    
+    <pre class="file" id="file2" style="display: none">package handler
+
+import (
+    "log"
+    "net/http"
+
+    "github.com/IvanovDmytroA/lets-go-chat/internal/handler"
+    "github.com/IvanovDmytroA/lets-go-chat/internal/service"
+    "github.com/labstack/echo"
+)
+
+const minUserNameLength int = 4
+const minPasswordLength int = 8
+const tokenExpirationHeader string = "X-Expires-After"
+const allowedCallsHeader string = "X-Rate-Limit"
+const loginCallsLimit string = "5"
+const contentTypeHeader string = "Content-Type"
+const jsonType string = "application/json"
+const userNameFormKey string = "userName"
+const passwordFormKey string = "password"
+
+// Login user request handler
+func LoginUser(c echo.Context) error <span class="cov8" title="1">{
+    ur := new(handler.LoginUserRequest)
+    if err := c.Bind(ur); err != nil </span><span class="cov8" title="1">{
+            errMsg := "Error during request body decoding: "
+            log.Printf("%v\n", err)
+            return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
+    }</span>
+
+    <span class="cov8" title="1">err := service.LoginUser(ur.UserName, ur.Password, c)
+
+    if err != nil </span><span class="cov8" title="1">{
+            log.Println(err)
+            return echo.NewHTTPError(http.StatusBadRequest, err)
+    }</span>
+
+    <span class="cov8" title="1">return nil</span>
+}
+</pre>
+    
+    <pre class="file" id="file3" style="display: none">package handler
+
+import (
+    "encoding/json"
+    "log"
+    "net/http"
+
+    "github.com/IvanovDmytroA/lets-go-chat/internal/handler"
+    "github.com/IvanovDmytroA/lets-go-chat/internal/service"
+    "github.com/labstack/echo"
+)
+
+// Create user request handler
+func CreateUser(c echo.Context) error <span class="cov8" title="1">{
+    ur := new(handler.CreateUserRequest)
+    if err := c.Bind(ur); err != nil </span><span class="cov8" title="1">{
+            errMsg := "Error during request body decoding: "
+            log.Printf(errMsg+"%v\n", err)
+            return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
+    }</span>
+
+    <span class="cov8" title="1">userResponse, status := service.CreateUser(ur.UserName, ur.Password)
+
+    // Setting up headers
+    c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+    c.Response().WriteHeader(status)
+
+    if status != http.StatusOK </span><span class="cov8" title="1">{
+            errMsg := "Failed to create new user"
+            log.Printf(errMsg)
+            return echo.NewHTTPError(http.StatusBadRequest, errMsg)
+    }</span>
+
+    // Encoding and sending response
+    <span class="cov8" title="1">enc := json.NewEncoder(c.Response())
+    err := enc.Encode(userResponse)
+    if err != nil </span><span class="cov0" title="0">{
+            errMsg := "Internal server error. Failed to encode createUserResponse: "
+            log.Printf(errMsg+"%v\n", err)
+            return echo.NewHTTPError(http.StatusInternalServerError, errMsg+err.Error())
+    }</span>
+    <span class="cov8" title="1">return nil</span>
+}
+</pre>
+    
+    <pre class="file" id="file4" style="display: block;">package handler
+
+import (
+    "fmt"
+    "log"
+    "net/http"
+    "os"
+
+    "github.com/IvanovDmytroA/lets-go-chat/internal/repository"
+    "github.com/go-redis/redis/v7"
+    "github.com/golang-jwt/jwt"
+    "github.com/gorilla/websocket"
+    "github.com/labstack/echo"
+)
+
+type AccessDetails struct {
+    AccessUuid string
+    UserId     string
+}
+
+func Websocket(c echo.Context) error <span class="cov8" title="1">{
+    userToken := c.QueryParam("token")
+    accessDetails, err := extractTokenMetadata(userToken)
+    if err != nil </span><span class="cov8" title="1">{
+            errMsg := "Invalid token: "
+            log.Printf(errMsg+"%v\n", err)
+            return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
+    }</span>
+
+    <span class="cov0" title="0">return connect(c, *accessDetails)</span>
+}
+
+func connect(c echo.Context, ad AccessDetails) error <span class="cov8" title="1">{
+    client, _ := c.Get("redis").(*redis.Client)
+
+    userId, err := client.Get(ad.AccessUuid).Result()
+    if err != nil </span><span class="cov8" title="1">{
+            errMsg := "Unauthorized. "
+            log.Printf(errMsg+"%v\n", err)
+            return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
+    }</span>
+
+    <span class="cov8" title="1">updateOnline(userId, true)
+    client.Del(ad.AccessUuid)
+
+    upgrader := websocket.Upgrader{}
+
+    ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+    if err != nil </span><span class="cov8" title="1">{
+            return err
+    }</span>
+    <span class="cov0" title="0">defer ws.Close()
+
+    for </span><span class="cov0" title="0">{
+            // Read message
+            _, msg, err := ws.ReadMessage()
+            if err != nil </span><span class="cov0" title="0">{
+                    updateOnline(userId, false)
+                    return nil // todo: implement closed connection error hsndling
+            }</span>
+
+            // Write echo message
+            <span class="cov0" title="0">err = ws.WriteMessage(websocket.TextMessage, msg)
+            if err != nil </span><span class="cov0" title="0">{
+                    updateOnline(userId, false)
+                    return nil // todo: implement closed connection error hsndling
+            }</span>
+    }
+}
+
+func verifyToken(t string) (*jwt.Token, error) <span class="cov8" title="1">{
+    token, err := jwt.Parse(t, func(token *jwt.Token) (interface{}, error) </span><span class="cov0" title="0">{
+            if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok </span><span class="cov0" title="0">{
+                    return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+            }</span>
+            <span class="cov0" title="0">return []byte(os.Getenv("ACCESS_SECRET")), nil</span>
+    })
+    <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+            return nil, err
+    }</span>
+    <span class="cov0" title="0">return token, nil</span>
+}
+
+func extractTokenMetadata(t string) (*AccessDetails, error) <span class="cov8" title="1">{
+    vt, err := verifyToken(t)
+    if err != nil </span><span class="cov8" title="1">{
+            return nil, err
+    }</span>
+    <span class="cov0" title="0">claims, ok := vt.Claims.(jwt.MapClaims)
+    if ok &amp;&amp; vt.Valid </span><span class="cov0" title="0">{
+            accessUuid, ok := claims["access_uuid"].(string)
+            if !ok </span><span class="cov0" title="0">{
+                    return nil, err
+            }</span>
+            <span class="cov0" title="0">userId := claims["user_id"].(string)
+            if err != nil </span><span class="cov0" title="0">{
+                    return nil, err
+            }</span>
+            <span class="cov0" title="0">return &amp;AccessDetails{
+                    AccessUuid: accessUuid,
+                    UserId:     userId,
+            }, nil</span>
+    }
+    <span class="cov0" title="0">return nil, err</span>
+}
+
+func updateOnline(username string, online bool) <span class="cov8" title="1">{
+    if online </span><span class="cov8" title="1">{
+            repository.GetActiveUsersStorage().AddUserToActiveUsersList(username)
+    }</span> else<span class="cov8" title="1"> {
+            repository.GetActiveUsersStorage().RemoveUserFromActiveUsersList(username)
+    }</span>
+}
+</pre>
+    
+    <pre class="file" id="file5" style="display: none">package repository
+
+import (
+    "log"
+
+    "github.com/uptrace/bun"
+)
+
+// Postgres worker
+type PostgresWorker struct {
+    Pool
+}
+
+// Init Postgres database
+func (p *PostgresWorker) Init(db *bun.DB) <span class="cov8" title="1">{
+    p.Pool.DB = db
+    _, err := p.DB.Exec("create database gochat")
+    if err != nil </span><span class="cov8" title="1">{
+            log.Println("Database already exists")
+    }</span>
+
+    <span class="cov8" title="1">createTables(p)</span>
+}
+
+// Returns Postgres connection pool
+func (p *PostgresWorker) Get() *bun.DB <span class="cov8" title="1">{
+    return p.DB
+}</span>
+
+func createTables(p *PostgresWorker) <span class="cov8" title="1">{
+    _, err := p.DB.Exec(`create table if not exists users
+            (
+                    id varchar primary key,
+                    user_name varchar,
+                    password varchar
+            );
+            create unique index if not exists users_id
+                    on users (id);
+            create unique index if not exists users_username
+                    on users (user_name);
+            `)
+
+    if err != nil </span><span class="cov0" title="0">{
+            log.Fatal(err)
+    }</span>
+}
+</pre>
+    
+    <pre class="file" id="file6" style="display: none">package repository
+
+import "log"
+
+var activeUsers activeUsersStorage
+
+type activeUsersStorage struct {
+    Users []string
+}
+
+func InitActiveUsersStorage() <span class="cov8" title="1">{
+    activeUsers = activeUsersStorage{}
+}</span>
+
+func GetActiveUsersStorage() *activeUsersStorage <span class="cov8" title="1">{
+    return &amp;activeUsers
+}</span>
+
+func (au *activeUsersStorage) AddUserToActiveUsersList(username string) <span class="cov8" title="1">{
+    users := au.Users
+    for _, ele := range users </span><span class="cov8" title="1">{
+            if ele == username </span><span class="cov8" title="1">{
+                    log.Println("User already active")
+                    return
+            }</span>
+    }
+    <span class="cov8" title="1">au.Users = append(users, username)</span>
+}
+
+func (au *activeUsersStorage) RemoveUserFromActiveUsersList(username string) <span class="cov8" title="1">{
+    users := au.Users
+    for index, ele := range users </span><span class="cov8" title="1">{
+            if ele == username </span><span class="cov8" title="1">{
+                    au.Users = append(users[:index], users[index+1:]...)
+                    return
+            }</span>
+    }
+}
+</pre>
+    
+    <pre class="file" id="file7" style="display: none">package repository
+
+import (
+    "context"
+
+    "github.com/IvanovDmytroA/lets-go-chat/internal/model"
+    repository "github.com/IvanovDmytroA/lets-go-chat/internal/repository/connectors"
+)
+
+var usersRepo usersRepository
+
+// User repository
+type usersRepository struct {
+    repository.Worker
+}
+
+// Initialize users repository
+func InitUserRepository(w *repository.Worker) <span class="cov8" title="1">{
+    usersRepo = usersRepository{*w}
+}</span>
+
+// Getter for users repository
+func GetUsersRepo() *usersRepository <span class="cov8" title="1">{
+    return &amp;usersRepo
+}</span>
+
+// Save new user
+// Returns an error when the user cannot be saved, otherwise return nil
+func (r *usersRepository) SaveUser(user model.User) error <span class="cov8" title="1">{
+    ctx := context.Background()
+    _, err := r.Worker.Get().NewInsert().Model(&amp;user).Exec(ctx)
+    if err != nil </span><span class="cov8" title="1">{
+            return err
+    }</span>
+    <span class="cov8" title="1">return nil</span>
+}
+
+// Get user by name
+// Returns user and flag showing whether the user exists in the database
+func (r *usersRepository) GetUserByUserName(userName string) (model.User, bool) <span class="cov8" title="1">{
+    ctx := context.Background()
+    var user model.User
+    if err := r.Worker.Get().NewSelect().Model(&amp;user).Where("user_name = ?", userName).Scan(ctx); err != nil </span><span class="cov8" title="1">{
+            return model.User{}, false
+    }</span>
+    <span class="cov8" title="1">return user, true</span>
+}
+
+// Delete user
+// Returns an error when the user cannot be deleted, otherwise return nil
+func (r *usersRepository) DeleteUser(user model.User) error <span class="cov8" title="1">{
+    ctx := context.Background()
+    _, err := r.Worker.Get().NewDelete().Model(&amp;user).Where("user_name = ?", &amp;user.UserName).Exec(ctx)
+    if err != nil </span><span class="cov0" title="0">{
+            return err
+    }</span>
+    <span class="cov8" title="1">return nil</span>
+}
+</pre>
+    
+    <pre class="file" id="file8" style="display: none">package service
+
+import (
+    "encoding/json"
+    "fmt"
+    "log"
+    "net/http"
+    "os"
+    "strconv"
+    "time"
+
+    "github.com/IvanovDmytroA/lets-go-chat/internal/handler"
+    "github.com/IvanovDmytroA/lets-go-chat/internal/model"
+    "github.com/IvanovDmytroA/lets-go-chat/internal/repository"
+    "github.com/IvanovDmytroA/lets-go-chat/pkg/hasher"
+    "github.com/go-redis/redis/v7"
+    "github.com/golang-jwt/jwt"
+    "github.com/labstack/echo"
+    uuid "github.com/satori/go.uuid"
+)
+
+const errorMessage string = "Invalid name or password"
+
+func LoginUser(userName, password string, c echo.Context) error <span class="cov8" title="1">{
+    loginRequest := handler.LoginUserRequest{UserName: userName, Password: password}
+    user, err := getUserFromRepo(loginRequest)
+    if err != nil </span><span class="cov8" title="1">{
+            fmt.Println(err)
+            return err
+    }</span>
+    <span class="cov8" title="1">token, err := createToken(user.Id)
+    if err != nil </span><span class="cov0" title="0">{
+            errMsg := "Failed to generate token"
+            log.Printf(errMsg+"%v\n", err)
+            return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
+    }</span>
+
+    <span class="cov8" title="1">client, _ := c.Get("redis").(*redis.Client)
+    saveErr := createAuth(client, user.Id, token)
+    if saveErr != nil </span><span class="cov0" title="0">{
+            errMsg := "CreateAuth failed: "
+            log.Printf(errMsg+"%v\n", err)
+            return echo.NewHTTPError(http.StatusInternalServerError, errMsg+err.Error())
+    }</span>
+
+    <span class="cov8" title="1">loginUrl := "wss://serene-everglades-55494.herokuapp.com/v1/chat/ws.rtm.start?token=" + token.AccessToken
+    loginUserResponse := handler.LoginUserResponse{
+            Url: loginUrl,
+    }
+    enc := json.NewEncoder(c.Response())
+    enc.SetEscapeHTML(false)
+    err = enc.Encode(loginUserResponse)
+    if err != nil </span><span class="cov0" title="0">{
+            errMsg := "Failed to encode UserStorage: "
+            log.Printf(errMsg+"%v\n", err)
+            return echo.NewHTTPError(http.StatusInternalServerError, errMsg+err.Error())
+    }</span>
+
+    <span class="cov8" title="1">c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+    c.Response().Header().Set("X-Rate-Limit", strconv.Itoa(360))
+    c.Response().Header().Set("X-Expires-After", time.Now().Add(time.Minute*10).Format(time.RFC1123))
+    c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+    c.Response().WriteHeader(http.StatusOK)
+
+    return nil</span>
+}
+
+func getUserFromRepo(loginRequest handler.LoginUserRequest) (model.User, error) <span class="cov8" title="1">{
+    userRepo := repository.GetUsersRepo()
+    user, exists := userRepo.GetUserByUserName(loginRequest.UserName)
+    if !exists </span><span class="cov8" title="1">{
+            return user, echo.NewHTTPError(http.StatusBadRequest, "User with provided name does not exist")
+    }</span>
+
+    <span class="cov8" title="1">isCorrectPassword := hasher.CheckPasswordHash(loginRequest.Password, user.Password)
+    if !isCorrectPassword </span><span class="cov8" title="1">{
+            return user, echo.NewHTTPError(http.StatusBadRequest, "Invalid password")
+    }</span>
+
+    <span class="cov8" title="1">return user, nil</span>
+}
+
+func createToken(userid string) (*handler.TokenDetails, error) <span class="cov8" title="1">{
+    td := &amp;handler.TokenDetails{}
+    td.Expires = time.Now().Add(time.Minute * 15).Unix()
+    td.AccessUuid = uuid.NewV4().String()
+
+    var err error
+    os.Setenv("ACCESS_SECRET", "")
+    atClaims := jwt.MapClaims{}
+    atClaims["authorized"] = true
+    atClaims["access_uuid"] = td.AccessUuid
+    atClaims["user_id"] = userid
+    atClaims["exp"] = td.Expires
+    atClaims["exp"] = time.Now().Add(time.Minute * 10).Unix()
+    at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+    td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+    if err != nil </span><span class="cov0" title="0">{
+            return nil, err
+    }</span>
+    <span class="cov8" title="1">return td, nil</span>
+}
+
+func createAuth(client *redis.Client, userid string, td *handler.TokenDetails) error <span class="cov8" title="1">{
+    at := time.Unix(td.Expires, 0)
+    now := time.Now()
+
+    errAccess := client.Set(td.AccessUuid, userid, at.Sub(now)).Err()
+    if errAccess != nil </span><span class="cov0" title="0">{
+            return errAccess
+    }</span>
+    <span class="cov8" title="1">return nil</span>
+}
+</pre>
+    
+    <pre class="file" id="file9" style="display: none">package service
+
+import (
+    "fmt"
+    "net/http"
+
+    "github.com/IvanovDmytroA/lets-go-chat/internal/handler"
+    "github.com/IvanovDmytroA/lets-go-chat/internal/model"
+    "github.com/IvanovDmytroA/lets-go-chat/internal/repository"
+    "github.com/IvanovDmytroA/lets-go-chat/pkg/hasher"
+    uuid "github.com/satori/go.uuid"
+)
+
+func CreateUser(userName, password string) (handler.CreateUserResponse, int) <span class="cov8" title="1">{
+    userResponse := handler.CreateUserResponse{}
+    userRepo := repository.GetUsersRepo()
+    _, exists := userRepo.GetUserByUserName(userName)
+    if exists </span><span class="cov8" title="1">{
+            return userResponse, http.StatusBadRequest
+    }</span>
+
+    <span class="cov8" title="1">createRequest := handler.CreateUserRequest{UserName: userName, Password: password}
+    hash, err := hasher.HashPassword(createRequest.Password)
+    if err != nil </span><span class="cov0" title="0">{
+            return userResponse, http.StatusInternalServerError
+    }</span>
+
+    <span class="cov8" title="1">userResponse.UserName = createRequest.UserName
+    userUuid := uuid.NewV4()
+    userResponse.Id = userUuid.String()
+    user := model.User{
+            Id:       userResponse.Id,
+            UserName: userResponse.UserName,
+            Password: hash,
+    }
+
+    err = userRepo.SaveUser(user)
+    if err != nil </span><span class="cov0" title="0">{
+            fmt.Println(err)
+            return userResponse, http.StatusBadRequest
+    }</span>
+
+    <span class="cov8" title="1">return userResponse, http.StatusOK</span>
+}
+</pre>
+    
+    <pre class="file" id="file10" style="display: none">package hasher
+
+import "golang.org/x/crypto/bcrypt"
+
+const hashCost int = 14
+
+// HashPassword generates the bcrypt hash of the password.
+// Returns a hashed password and nil or returns error when a provided string is empty.
+func HashPassword(password string) (string, error) <span class="cov8" title="1">{
+    bytes, err := bcrypt.GenerateFromPassword([]byte(password), hashCost)
+    return string(bytes), err
+}</span>
+
+// CheckPasswordHash compares a password and bcrypt hash.
+// Returns true if hashed password have the same hash as provided bcrypt hash, otherwise returns false.
+func CheckPasswordHash(password, hash string) bool <span class="cov8" title="1">{
+    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+    return err == nil
+}</span>
+</pre>
+    
+    </div>
+
+<script>
+(function() {
+    var files = document.getElementById('files');
+    var visible;
+    files.addEventListener('change', onChange, false);
+    function select(part) {
+        if (visible)
+            visible.style.display = 'none';
+        visible = document.getElementById(part);
+        if (!visible)
+            return;
+        files.value = part;
+        visible.style.display = 'block';
+        location.hash = part;
+    }
+    function onChange() {
+        select(files.value);
+        window.scrollTo(0, 0);
+    }
+    if (location.hash != "") {
+        select(location.hash.substr(1));
+    }
+    if (!visible) {
+        select("file0");
+    }
+})();
+</script>
+
+</body></html>
