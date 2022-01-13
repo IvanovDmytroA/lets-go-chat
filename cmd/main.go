@@ -1,7 +1,14 @@
 package main
 
-import "github.com/IvanovDmytroA/lets-go-chat/internal/server"
+import (
+	"sync"
+
+	"github.com/IvanovDmytroA/lets-go-chat/internal/server"
+)
 
 func main() {
-	server.Start()
+	once := sync.Once{}
+	once.Do(func() {
+		server.Start()
+	})
 }

@@ -38,7 +38,16 @@ func createTables(p *PostgresWorker) {
 			on users (id);
 		create unique index if not exists users_username
 			on users (user_name);
-		`)
+		create table if not exists messages
+		(
+			id int primary key,
+			user_id varchar,
+			text varchar,
+			constraint fk_user
+      			foreign key(user_id) 
+	  				references users(id)
+		);
+	`)
 
 	if err != nil {
 		log.Fatal(err)

@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/IvanovDmytroA/lets-go-chat/internal/configuration"
-	"github.com/IvanovDmytroA/lets-go-chat/internal/handler"
 	transport_handler "github.com/IvanovDmytroA/lets-go-chat/internal/handler/transport"
+	websocket "github.com/IvanovDmytroA/lets-go-chat/internal/handler/websocket"
 	"github.com/IvanovDmytroA/lets-go-chat/internal/repository"
 	connectors "github.com/IvanovDmytroA/lets-go-chat/internal/repository/connectors"
 	"github.com/go-redis/redis/v7"
@@ -31,6 +31,7 @@ func Start() {
 	}
 
 	initDb(env)
+	initHub()
 	repository.InitActiveUsersStorage()
 	redisClient := initRedis(env)
 	initEcho(redisClient, port)
@@ -92,8 +93,14 @@ func initEcho(rc *redis.Client, p string) {
 	e.POST("/v1/user", transport_handler.CreateUser)
 	e.POST("/v1/user/login", transport_handler.LoginUser)
 	e.GET("/v1/user/active", transport_handler.GetActiveUsers)
-	e.GET("/v1/chat/ws.rtm.start", handler.Websocket)
+	e.GET("/v1/chat/ws.rtm.start", websocket.Websocket)
 	e.Static("/v1/chat", "internal/public")
 
 	e.Logger.Fatal(e.Start(":" + p))
+}
+
+func initHub() {
+	websocket.InitHub()
+	hub := websocket.GetHub()
+	go hub.Run()
 }
