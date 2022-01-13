@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"sync"
 
 	"github.com/IvanovDmytroA/lets-go-chat/internal/model"
 	repository "github.com/IvanovDmytroA/lets-go-chat/internal/repository/connectors"
@@ -11,12 +12,13 @@ var usersRepo usersRepository
 
 // User repository
 type usersRepository struct {
-	repository.Worker
+	W  repository.Worker
+	mu sync.Mutex
 }
 
 // Initialize users repository
 func InitUserRepository(w *repository.Worker) {
-	usersRepo = usersRepository{*w}
+	usersRepo = usersRepository{W: *w}
 }
 
 // Getter for users repository
@@ -26,9 +28,11 @@ func GetUsersRepo() *usersRepository {
 
 // Save new user
 // Returns an error when the user cannot be saved, otherwise return nil
-func (r *usersRepository) SaveUser(user model.User) error {
+func (ur *usersRepository) SaveUser(user model.User) error {
 	ctx := context.Background()
-	_, err := r.Worker.Get().NewInsert().Model(&user).Exec(ctx)
+	ur.mu.Lock()
+	defer ur.mu.Unlock()
+	_, err := ur.W.Get().NewInsert().Model(&user).Exec(ctx)
 	if err != nil {
 		return err
 	}
@@ -37,10 +41,10 @@ func (r *usersRepository) SaveUser(user model.User) error {
 
 // Get user by name
 // Returns user and flag showing whether the user exists in the database
-func (r *usersRepository) GetUserByUserName(userName string) (model.User, bool) {
+func (ur *usersRepository) GetUserByUserName(userName string) (model.User, bool) {
 	ctx := context.Background()
 	var user model.User
-	if err := r.Worker.Get().NewSelect().Model(&user).Where("user_name = ?", userName).Scan(ctx); err != nil {
+	if err := ur.W.Get().NewSelect().Model(&user).Where("user_name = ?", userName).Scan(ctx); err != nil {
 		return model.User{}, false
 	}
 	return user, true
@@ -48,9 +52,11 @@ func (r *usersRepository) GetUserByUserName(userName string) (model.User, bool) 
 
 // Delete user
 // Returns an error when the user cannot be deleted, otherwise return nil
-func (r *usersRepository) DeleteUser(user model.User) error {
+func (ur *usersRepository) DeleteUser(user model.User) error {
 	ctx := context.Background()
-	_, err := r.Worker.Get().NewDelete().Model(&user).Where("user_name = ?", &user.UserName).Exec(ctx)
+	ur.mu.Lock()
+	defer ur.mu.Unlock()
+	_, err := ur.W.Get().NewDelete().Model(&user).Where("user_name = ?", &user.UserName).Exec(ctx)
 	if err != nil {
 		return err
 	}

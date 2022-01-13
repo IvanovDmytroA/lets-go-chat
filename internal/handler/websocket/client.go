@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
+	"github.com/IvanovDmytroA/lets-go-chat/internal/model"
 	"github.com/IvanovDmytroA/lets-go-chat/internal/repository"
 	"github.com/go-redis/redis/v7"
 	"github.com/golang-jwt/jwt"
@@ -76,9 +78,13 @@ func connect(c echo.Context, ad AccessDetails) error {
 	hub := GetHub()
 	client := &Client{hub: hub, conn: ws, send: make(chan []byte, 256)}
 	client.hub.register <- client
+	err = writePrevMessages(ws)
+	if err != nil {
+		log.Printf("Failed to download prev messages: %v", err)
+	}
 
-	go client.writePump()
-	go client.readPump()
+	go client.writePump(userId)
+	go client.readPump(userId)
 
 	return nil
 
@@ -120,7 +126,7 @@ func extractTokenMetadata(t string) (*AccessDetails, error) {
 	return nil, err
 }
 
-func (c *Client) readPump() {
+func (c *Client) readPump(userId string) {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -128,17 +134,27 @@ func (c *Client) readPump() {
 	c.conn.SetReadLimit(maxMessageSize)
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
+	wg := sync.WaitGroup{}
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
+				updateOnline(userId, false)
 			}
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		wg.Add(1)
 		c.hub.broadcast <- message
+		go func(msg []byte, userId string) {
+			repository.GetMessagesRepository().SaveMessage(model.Message{UserId: userId, Text: string(msg)})
+			wg.Done()
+		}(message, userId)
 	}
+
+	wg.Wait()
 }
 
 // writePump pumps messages from the hub to the websocket connection.
@@ -146,7 +162,7 @@ func (c *Client) readPump() {
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
-func (c *Client) writePump() {
+func (c *Client) writePump(userId string) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -157,7 +173,7 @@ func (c *Client) writePump() {
 		case message, ok := <-c.send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				// The hub closed the channel.
+				updateOnline(userId, false)
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -176,11 +192,13 @@ func (c *Client) writePump() {
 			}
 
 			if err := w.Close(); err != nil {
+				updateOnline(userId, false)
 				return
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				updateOnline(userId, false)
 				return
 			}
 		}
@@ -193,4 +211,17 @@ func updateOnline(username string, online bool) {
 	} else {
 		repository.GetActiveUsersStorage().RemoveUserFromActiveUsersList(username)
 	}
+}
+
+func writePrevMessages(ws *websocket.Conn) error {
+	messages, err := repository.GetMessagesRepository().GetAllMessages()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	for _, msg := range messages {
+		ws.WriteMessage(websocket.TextMessage, []byte(msg.Text))
+	}
+
+	return nil
 }

@@ -40,7 +40,7 @@ func createTables(p *PostgresWorker) {
 			on users (user_name);
 		create table if not exists messages
 		(
-			id int primary key,
+			id serial primary key,
 			user_id varchar,
 			text varchar,
 			constraint fk_user

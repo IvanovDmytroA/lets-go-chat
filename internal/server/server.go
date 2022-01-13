@@ -59,6 +59,7 @@ func initDb(e *configuration.Env) {
 		db := bun.NewDB(dbc, pgdialect.New())
 		worker.Init(db)
 		repository.InitUserRepository(&worker)
+		repository.InitMessagesRepository(&worker)
 	}
 }
 
@@ -88,7 +89,7 @@ func initEcho(rc *redis.Client, p string) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.BodyDump(bodyDumpMiddleware))
 	e.Use(middleware.Recover())
-	e.Use(dataSourceMiddleware(repository.GetUsersRepo().Get()))
+	e.Use(dataSourceMiddleware(repository.GetUsersRepo().W.Get()))
 	e.Use(redisMiddleware(rc))
 	e.POST("/v1/user", transport_handler.CreateUser)
 	e.POST("/v1/user/login", transport_handler.LoginUser)
