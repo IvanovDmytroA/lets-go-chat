@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -54,11 +55,14 @@ func Websocket(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errMsg+err.Error())
 	}
 
-	return connect(c, *accessDetails)
+	return connect(c, accessDetails)
 }
 
-func connect(c echo.Context, ad AccessDetails) error {
-	redClient, _ := c.Get("redis").(*redis.Client)
+func connect(c echo.Context, ad *AccessDetails) error {
+	redClient, ok := c.Get("redis").(*redis.Client)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong")
+	}
 
 	userId, err := redClient.Get(ad.AccessUuid).Result()
 	if err != nil {
@@ -112,18 +116,18 @@ func extractTokenMetadata(t string) (*AccessDetails, error) {
 	if ok && vt.Valid {
 		accessUuid, ok := claims["access_uuid"].(string)
 		if !ok {
-			return nil, err
+			return nil, errors.New("Failed to obtain uuid")
 		}
-		userId := claims["user_id"].(string)
-		if err != nil {
-			return nil, err
+		userId, ok := claims["user_id"].(string)
+		if !ok {
+			return nil, errors.New("Failed to obtain User ID")
 		}
 		return &AccessDetails{
 			AccessUuid: accessUuid,
 			UserId:     userId,
 		}, nil
 	}
-	return nil, err
+	return nil, errors.New("Failed to claim parameters")
 }
 
 func (c *Client) readPump(userId string) {
@@ -149,7 +153,10 @@ func (c *Client) readPump(userId string) {
 		wg.Add(1)
 		c.hub.broadcast <- message
 		go func(msg []byte, userId string) {
-			repository.GetMessagesRepository().SaveMessage(model.Message{UserId: userId, Text: string(msg)})
+			err := repository.GetMessagesRepository().SaveMessage(model.Message{UserId: userId, Text: string(msg)})
+			if err != nil {
+				log.Printf("Failed to save message into repository"+"%v\n", err)
+			}
 			wg.Done()
 		}(message, userId)
 	}
