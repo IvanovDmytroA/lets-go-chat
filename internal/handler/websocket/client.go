@@ -157,11 +157,6 @@ func (c *Client) readPump(userId string) {
 	wg.Wait()
 }
 
-// writePump pumps messages from the hub to the websocket connection.
-//
-// A goroutine running writePump is started for each connection. The
-// application ensures that there is at most one writer to a connection by
-// executing all writes from this goroutine.
 func (c *Client) writePump(userId string) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
@@ -184,7 +179,6 @@ func (c *Client) writePump(userId string) {
 			}
 			w.Write(message)
 
-			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
