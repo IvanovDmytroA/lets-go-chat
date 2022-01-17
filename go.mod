@@ -4,6 +4,7 @@ module github.com/IvanovDmytroA/lets-go-chat
 go 1.16
 
 require (
+	github.com/deepmap/oapi-codegen v1.9.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -20,9 +21,9 @@ require (
 	github.com/uptrace/bun/dialect/pgdialect v1.0.17
 	github.com/uptrace/bun/driver/pgdriver v1.0.17
 	github.com/valyala/fasttemplate v1.2.1 // indirect
+	github.com/vektra/mockery/v2 v2.9.4 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
-	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
