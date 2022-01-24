@@ -1,11 +1,15 @@
 package repository
 
-import "log"
+import (
+	"log"
+	"sync"
+)
 
 var activeUsers activeUsersStorage
 
 type activeUsersStorage struct {
 	Users []string
+	mu    sync.Mutex
 }
 
 func InitActiveUsersStorage() {
@@ -17,6 +21,8 @@ func GetActiveUsersStorage() *activeUsersStorage {
 }
 
 func (au *activeUsersStorage) AddUserToActiveUsersList(username string) {
+	au.mu.Lock()
+	defer au.mu.Unlock()
 	users := au.Users
 	for _, ele := range users {
 		if ele == username {
@@ -28,6 +34,8 @@ func (au *activeUsersStorage) AddUserToActiveUsersList(username string) {
 }
 
 func (au *activeUsersStorage) RemoveUserFromActiveUsersList(username string) {
+	au.mu.Lock()
+	defer au.mu.Unlock()
 	users := au.Users
 	for index, ele := range users {
 		if ele == username {

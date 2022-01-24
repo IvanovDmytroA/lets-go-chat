@@ -40,7 +40,7 @@ func TestConnectInvalidConnectionType(t *testing.T) {
 		t.Fatal("Failed to create redis auth")
 	}
 
-	err := connect(c, AccessDetails{AccessUuid: token, UserId: userId})
+	err := connect(c, &AccessDetails{AccessUuid: token, UserId: userId})
 
 	keys = redisConnect.Keys("*").Val()
 	for _, v := range keys {
@@ -69,7 +69,7 @@ func TestConnectUnauthorized(t *testing.T) {
 		redisConnect.Del(v)
 	}
 
-	err := connect(c, AccessDetails{AccessUuid: token, UserId: userId})
+	err := connect(c, &AccessDetails{AccessUuid: token, UserId: userId})
 
 	if err == nil {
 		t.Fatal("Connected unauthorized user")
